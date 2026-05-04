@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+:root {
+  --eco-black: #020617;
+  --eco-yellow: #facc15;
+}
+
+body {
+  margin: 0;
+  background-color: var(--eco-black);
+  color: white;
+  font-family: sans-serif;
+}
