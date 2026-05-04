@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import React, { useState, useEffect } from 'react';
 import { db } from './firebase'; 
 import { collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from "firebase/firestore"; 
@@ -58,7 +57,6 @@ const Pagos = () => {
   );
 };
 
-=======
 import React, { useState, useEffect } from 'react';
 import { db } from './firebase'; 
 import { collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from "firebase/firestore"; 
@@ -118,5 +116,4 @@ const Pagos = () => {
   );
 };
 
->>>>>>> 3646c24 (Historial y corrección de ventas funcional)
 export default Pagos;

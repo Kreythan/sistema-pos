@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import React, { useState, useEffect } from 'react';
 import { db } from './firebase'; 
 import { collection, onSnapshot, doc, updateDoc, increment } from "firebase/firestore"; 
@@ -178,7 +177,6 @@ const Ventas = () => {
   );
 };
 
-=======
 import React, { useState, useEffect } from 'react';
 import { db, auth } from './firebase'; // Importamos también auth para saber quién vende
 import { 
@@ -380,5 +378,4 @@ const Ventas = () => {
   );
 };
 
->>>>>>> 3646c24 (Historial y corrección de ventas funcional)
 export default Ventas;

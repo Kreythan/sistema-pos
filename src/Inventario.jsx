@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import React, { useState, useEffect } from 'react';
 import { db } from './firebase'; 
 import { collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, updateDoc } from "firebase/firestore"; 
@@ -234,7 +233,6 @@ const Inventario = () => {
   );
 };
 
-=======
 import React, { useState, useEffect } from 'react';
 import { db } from './firebase'; 
 import { collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, updateDoc } from "firebase/firestore"; 
@@ -470,5 +468,4 @@ const Inventario = () => {
   );
 };
 
->>>>>>> 3646c24 (Historial y corrección de ventas funcional)
 export default Inventario;

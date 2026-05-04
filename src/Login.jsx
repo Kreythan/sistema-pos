@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import React, { useState } from 'react';
 import { auth } from './firebase';
 import { signInWithEmailAndPassword } from "firebase/auth";
@@ -45,7 +44,6 @@ const Login = ({ setUsuarioLogueado }) => {
   );
 };
 
-=======
 import React, { useState } from 'react';
 import { auth } from './firebase';
 import { signInWithEmailAndPassword } from "firebase/auth";
@@ -92,5 +90,4 @@ const Login = ({ setUsuarioLogueado }) => {
   );
 };
 
->>>>>>> 3646c24 (Historial y corrección de ventas funcional)
 export default Login;

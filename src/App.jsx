@@ -6,10 +6,9 @@ import Pagos from './Pagos';
 import Login from './Login'; // Asegúrate de haber creado este archivo
 import { auth } from './firebase';
 import { onAuthStateChanged, signOut } from "firebase/auth";
-<<<<<<< HEAD
-=======
+
 import Historial from './Historial';
->>>>>>> 3646c24 (Historial y corrección de ventas funcional)
+
 
 function App() {
   const [user, setUser] = useState(null);
@@ -53,20 +52,6 @@ function App() {
             🛒 Ventas
           </button>
 
-<<<<<<< HEAD
-=======
-         
-
-
-           {/* NUEVO BOTÓN HISTORIAL (Para ambos roles) */}
-          <button 
-           onClick={() => setPantalla('historial')} 
-           className={`w-full flex items-center gap-3 p-4 rounded-2xl font-bold uppercase text-[11px] transition-all ${pantalla === 'historial' ? 'bg-yellow-400 text-black' : 'text-slate-400 hover:bg-slate-900'}`}>
-        
-              📜 Historial
-          </button>
-
->>>>>>> 3646c24 (Historial y corrección de ventas funcional)
           {/* ESTOS BOTONES SOLO LOS VE EL ADMIN */}
           {isAdmin && (
             <>
@@ -94,10 +79,7 @@ function App() {
       {/* CONTENIDO */}
       <main className="flex-1 overflow-hidden relative">
         {pantalla === 'ventas' && <Ventas />}
-<<<<<<< HEAD
-=======
         {pantalla === 'historial' && <Historial />} {/* Añadir esto */}
->>>>>>> 3646c24 (Historial y corrección de ventas funcional)
         {pantalla === 'inventario' && isAdmin && <Inventario />}
         {pantalla === 'compras' && isAdmin && <Compras />}
         {pantalla === 'pagos' && isAdmin && <Pagos />}

@@ -8,10 +8,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <App />
   </React.StrictMode>,
-<<<<<<< HEAD
-)
-=======
 )
 
 
->>>>>>> 3646c24 (Historial y corrección de ventas funcional)
+

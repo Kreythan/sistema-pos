@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-/** @type {import('tailwindcss').Config} */
+//*@type {import('tailwindcss').Config} */
 export default {
   content: [
     "./index.html",
@@ -15,8 +14,10 @@ export default {
     },
   },
   plugins: [],
-=======
-/** @type {import('tailwindcss').Config} */
+  }
+
+
+/**@type {import('tailwindcss').Config} */
 export default {
   content: [
     "./index.html",
@@ -26,5 +27,4 @@ export default {
     extend: {},
   },
   plugins: [],
->>>>>>> 3646c24 (Historial y corrección de ventas funcional)
 }

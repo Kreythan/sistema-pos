@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
@@ -25,7 +24,6 @@ export const db = getFirestore(app); // ESTO ES CLAVE
 
 
 // ... abajo de donde inicializas 'db'
-=======
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
@@ -52,5 +50,4 @@ export const db = getFirestore(app); // ESTO ES CLAVE
 
 
 // ... abajo de donde inicializas 'db'
->>>>>>> 3646c24 (Historial y corrección de ventas funcional)
 export const auth = getAuth(app);

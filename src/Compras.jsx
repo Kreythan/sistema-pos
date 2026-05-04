@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import React, { useState } from 'react';
 import { db } from './firebase'; 
 import { collection, addDoc, doc, updateDoc, increment, getDocs, query, where } from "firebase/firestore"; 
@@ -74,7 +73,6 @@ const Compras = () => {
   );
 };
 
-=======
 import React, { useState } from 'react';
 import { db } from './firebase'; 
 import { collection, addDoc, doc, updateDoc, increment, getDocs, query, where } from "firebase/firestore"; 
@@ -150,5 +148,4 @@ const Compras = () => {
   );
 };
 
->>>>>>> 3646c24 (Historial y corrección de ventas funcional)
 export default Compras;
