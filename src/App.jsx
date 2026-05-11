@@ -3,19 +3,16 @@ import Ventas from './Ventas';
 import Inventario from './Inventario';
 import Compras from './Compras';
 import Pagos from './Pagos';
-import Login from './Login'; // Asegúrate de haber creado este archivo
+import Login from './Login';
+import Historial from './Historial';
 import { auth } from './firebase';
 import { onAuthStateChanged, signOut } from "firebase/auth";
-
-import Historial from './Historial';
-
 
 function App() {
   const [user, setUser] = useState(null);
   const [cargando, setCargando] = useState(true);
   const [pantalla, setPantalla] = useState('ventas');
 
-  // 1. ESCUCHAR SI HAY UN USUARIO CONECTADO
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (usuarioFirebase) => {
       setUser(usuarioFirebase);
@@ -24,15 +21,13 @@ function App() {
     return () => unsub();
   }, []);
 
-  // 2. FUNCIÓN PARA CERRAR SESIÓN
   const salir = () => signOut(auth);
 
-  // 3. DEFINIR SI ES ADMIN (Pon aquí tu correo de administrador)
+  // Pon aquí tu correo de administrador
   const isAdmin = user?.email === "admin@eco360.com"; 
 
   if (cargando) return <div className="h-screen bg-slate-950 flex items-center justify-center text-yellow-400 font-bold">CARGANDO ECO 360...</div>;
 
-  // Si no hay usuario, mostramos el Login
   if (!user) return <Login />;
 
   return (
@@ -48,8 +43,14 @@ function App() {
         </div>
 
         <nav className="flex-1 space-y-2">
+          {/* BOTÓN DE VENTAS (Cualquier usuario lo ve) */}
           <button onClick={() => setPantalla('ventas')} className={`w-full flex items-center gap-3 p-4 rounded-2xl font-bold uppercase text-[11px] transition-all ${pantalla === 'ventas' ? 'bg-yellow-400 text-black' : 'text-slate-400 hover:bg-slate-900'}`}>
             🛒 Ventas
+          </button>
+
+          {/* BOTÓN DE HISTORIAL (Lo he puesto para todos, si quieres que solo sea admin, mételo abajo) */}
+          <button onClick={() => setPantalla('historial')} className={`w-full flex items-center gap-3 p-4 rounded-2xl font-bold uppercase text-[11px] transition-all ${pantalla === 'historial' ? 'bg-yellow-400 text-black' : 'text-slate-400 hover:bg-slate-900'}`}>
+            📋 Historial
           </button>
 
           {/* ESTOS BOTONES SOLO LOS VE EL ADMIN */}
@@ -76,10 +77,10 @@ function App() {
         </div>
       </div>
 
-      {/* CONTENIDO */}
+      {/* CONTENIDO PRINCIPAL */}
       <main className="flex-1 overflow-hidden relative">
         {pantalla === 'ventas' && <Ventas />}
-        {pantalla === 'historial' && <Historial />} {/* Añadir esto */}
+        {pantalla === 'historial' && <Historial />}
         {pantalla === 'inventario' && isAdmin && <Inventario />}
         {pantalla === 'compras' && isAdmin && <Compras />}
         {pantalla === 'pagos' && isAdmin && <Pagos />}
