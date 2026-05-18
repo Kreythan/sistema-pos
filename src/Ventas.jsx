@@ -7,8 +7,11 @@ import {
   updateDoc, 
   increment, 
   addDoc, 
-  serverTimestamp 
+  serverTimestamp, 
+  getDocs, // <-- AÑADIR ESTE
+  where // <-- AÑADIR ESTE
 } from "firebase/firestore"; 
+import { signOut } from "firebase/auth";
 
 const Ventas = () => {
   const [productos, setProductos] = useState([]);
@@ -62,6 +65,57 @@ const Ventas = () => {
     }
     return () => clearInterval(intervalo);
   }, [presionandoQR]);
+
+  const cerrarCaja = async () => {
+    const usuarioActual = auth.currentUser?.email;
+    if (!usuarioActual) return;
+
+    const confirmar = window.confirm(`⚠️ ¿Estás seguro de cerrar la caja para el usuario ${usuarioActual.split('@')[0].toUpperCase()}?\nSe calcularán los totales y se cerrará la sesión.`);
+    if (!confirmar) return;
+
+    try {
+      // 1. Consultar las ventas de HOY hechas por este vendedor
+      const hoy = new Date();
+      hoy.setHours(0,0,0,0); // Inicio del día
+
+      const q = query(
+        collection(db, "ventas"),
+        where("vendedor", "==", usuarioActual),
+        where("fecha", ">=", hoy)
+      );
+
+      const querySnapshot = await getDocs(q);
+      
+      let efectivo = 0;
+      let qr = 0;
+      let total = 0;
+
+      querySnapshot.forEach((doc) => {
+        const datos = doc.data();
+        if (datos.metodoPago === 'efectivo') efectivo += datos.total;
+        if (datos.metodoPago === 'qr') qr += datos.total;
+        total += datos.total;
+      });
+
+      // 2. Guardar el reporte de corte en Firestore
+      await addDoc(collection(db, "cortes"), {
+        vendedor: usuarioActual,
+        totalEfectivo: efectivo,
+        totalQR: qr,
+        totalGeneral: total,
+        fechaCierre: serverTimestamp()
+      });
+
+      alert(`✅ Caja Cerrada con éxito.\n💵 Efectivo: Bs ${efectivo.toFixed(2)}\n📱 QR: Bs ${qr.toFixed(2)}\n💰 Total: Bs ${total.toFixed(2)}\n\nCerrando sesión...`);
+      
+      // 3. Forzar el cierre de sesión por seguridad
+      await signOut(auth);
+
+    } catch (error) {
+      console.error("Error al cerrar caja:", error);
+      alert("❌ Error al procesar el corte de caja");
+    }
+  };
 
   const productosFiltrados = productos.filter(p => 
     p.nombre.toLowerCase().includes(busqueda.toLowerCase()) && p.cantidad > 0
@@ -226,8 +280,17 @@ const Ventas = () => {
           >
             Cancelar / Limpiar Todo
           </button>
+          
+          <button 
+            onClick={cerrarCaja}
+            className="w-full bg-slate-900 border border-yellow-400/20 hover:border-yellow-400 text-yellow-400 font-black py-3 rounded-2xl transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-2 mt-2"
+          >
+            📊 Cerrar Caja / Turno
+          </button>
         </div>
       </div>
+
+
 
       {/* MODAL DE PAGO COMPLETO INTERACTIVO */}
       {mostrarModalPago && (

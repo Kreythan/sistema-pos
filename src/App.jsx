@@ -7,6 +7,7 @@ import Login from './Login';
 import Historial from './Historial';
 import { auth } from './firebase';
 import { onAuthStateChanged, signOut } from "firebase/auth";
+import Cortes from './Cortes';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -65,6 +66,10 @@ function App() {
               <button onClick={() => setPantalla('pagos')} className={`w-full flex items-center gap-3 p-4 rounded-2xl font-bold uppercase text-[11px] transition-all ${pantalla === 'pagos' ? 'bg-yellow-400 text-black' : 'text-slate-400 hover:bg-slate-900'}`}>
                 💸 Pagos
               </button>
+              <button onClick={() => setPantalla('cortes')} className={`w-full flex items-center gap-3 p-4 rounded-2xl font-bold uppercase text-[11px] transition-all ${pantalla === 'pagos' ? 'bg-yellow-400 text-black' : 'text-slate-400 hover:bg-slate-900'}`}>
+                📊 Cortes
+              </button>
+              
             </>
           )}
         </nav>
@@ -84,6 +89,7 @@ function App() {
         {pantalla === 'inventario' && isAdmin && <Inventario />}
         {pantalla === 'compras' && isAdmin && <Compras />}
         {pantalla === 'pagos' && isAdmin && <Pagos />}
+        {pantalla === 'cortes' && isAdmin && <Cortes />}
       </main>
 
     </div>
