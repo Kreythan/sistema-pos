@@ -15,6 +15,13 @@ const Ventas = () => {
   const [busqueda, setBusqueda] = useState("");
   const [carrito, setCarrito] = useState([]);
 
+  // NUEVOS ESTADOS PARA EL MODAL DE PAGO INTERACTIVO
+  const [mostrarModalPago, setMostrarModalPago] = useState(false);
+  const [metodoPago, setMetodoPago] = useState(null); // 'efectivo' o 'qr'
+  const [pagaCon, setPagaCon] = useState("");
+  const [presionandoQR, setPresionandoQR] = useState(false);
+  const [progresoQR, setProgresoQR] = useState(0);
+
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "productos"), (snapshot) => {
       const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -34,6 +41,27 @@ const Ventas = () => {
       window.removeEventListener('keydown', manejarTeclado);
     };
   }, [carrito]);
+
+  // EFECTO NUEVO: Controla los 5 segundos manteniendo presionado para el QR
+  useEffect(() => {
+    let intervalo;
+    if (presionandoQR) {
+      intervalo = setInterval(() => {
+        setProgresoQR((prev) => {
+          if (prev >= 100) {
+            clearInterval(intervalo);
+            setPresionandoQR(false);
+            ejecutarGuardadoVenta('qr'); // Guarda la venta automáticamente al completarse el 100%
+            return 100;
+          }
+          return prev + 2; // Avanza un 2% cada 100ms (5 segundos en total)
+        });
+      }, 100);
+    } else {
+      setProgresoQR(0);
+    }
+    return () => clearInterval(intervalo);
+  }, [presionandoQR]);
 
   const productosFiltrados = productos.filter(p => 
     p.nombre.toLowerCase().includes(busqueda.toLowerCase()) && p.cantidad > 0
@@ -67,27 +95,32 @@ const Ventas = () => {
     }
   };
 
-  // --- FUNCIÓN MODIFICADA: AHORA GUARDA EN EL HISTORIAL ---
-  const finalizarVenta = async () => {
+  // --- NUEVA LÓGICA DE PASOS PARA LA VENTA ---
+  const iniciarPago = () => {
     if (carrito.length === 0) return alert("El carrito está vacío");
+    setMetodoPago(null);
+    setPagaCon("");
+    setProgresoQR(0);
+    setMostrarModalPago(true);
+  };
 
-    const confirmar = window.confirm(`¿Confirmar venta por Bs ${totalVenta.toFixed(2)}?`);
-    if (!confirmar) return;
-
+  const ejecutarGuardadoVenta = async (metodo) => {
     try {
-      // 1. GUARDAR LA VENTA EN LA COLECCIÓN "ventas" PARA EL HISTORIAL
+      // 1. GUARDAR LA VENTA CON EL MÉTODO DE PAGO CORRESPONDIENTE
       await addDoc(collection(db, "ventas"), {
         productos: carrito.map(item => ({
           nombre: item.nombre,
           precio: item.precio,
+          amount: item.precio,
           cantidadVenta: item.cantidadSeleccionada
         })),
         total: totalVenta,
-        fecha: serverTimestamp(), // Usamos la hora del servidor de Firebase
+        metodoPago: metodo, // 'efectivo' o 'qr'
+        fecha: serverTimestamp(),
         vendedor: auth.currentUser?.email || "Desconocido"
       });
 
-      // 2. ACTUALIZAR EL STOCK EN LA COLECCIÓN "productos"
+      // 2. ACTUALIZAR EL STOCK EN LA BASE DE DATOS
       for (const item of carrito) {
         const productoRef = doc(db, "productos", item.id);
         await updateDoc(productoRef, {
@@ -97,7 +130,8 @@ const Ventas = () => {
 
       setCarrito([]);
       setBusqueda("");
-      alert("✅ Venta procesada y guardada en el historial");
+      setMostrarModalPago(false);
+      alert(`✅ Venta registrada con éxito en ${metodo.toUpperCase()}`);
     } catch (error) {
       console.error("Error en la venta:", error);
       alert("❌ Error al procesar la venta");
@@ -107,7 +141,7 @@ const Ventas = () => {
   const totalVenta = carrito.reduce((acc, item) => acc + (item.precio * item.cantidadSeleccionada), 0);
 
   return (
-    <div className="flex h-full p-6 gap-6 bg-slate-950 text-white overflow-hidden">
+    <div className="flex h-full p-6 gap-6 bg-slate-950 text-white overflow-hidden relative">
       
       {/* IZQUIERDA: BUSCADOR */}
       <div className="flex-1 flex flex-col gap-6 overflow-hidden">
@@ -179,7 +213,7 @@ const Ventas = () => {
           
           <button 
             id="btn-finalizar"
-            onClick={finalizarVenta}
+            onClick={iniciarPago}
             className="w-full bg-yellow-400 text-black font-black py-4 rounded-2xl hover:bg-yellow-500 transition-all active:scale-95 flex flex-col items-center"
           >
             <span className="text-lg">CONFIRMAR VENTA</span>
@@ -194,6 +228,117 @@ const Ventas = () => {
           </button>
         </div>
       </div>
+
+      {/* MODAL DE PAGO COMPLETO INTERACTIVO */}
+      {mostrarModalPago && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fadeIn">
+          <div className="bg-slate-900 border border-yellow-400/20 p-8 rounded-[2.5rem] w-full max-w-md shadow-2xl relative">
+            
+            <button 
+              onClick={() => setMostrarModalPago(false)}
+              className="absolute top-5 right-5 text-slate-500 hover:text-white font-bold text-lg"
+            >
+              ✕
+            </button>
+
+            <h3 className="text-2xl font-black text-yellow-400 italic text-center mb-2">PROCESAR PAGO</h3>
+            <p className="text-center text-xl font-black text-white mb-6">Total: Bs {totalVenta.toFixed(2)}</p>
+
+            {/* SELECCIÓN DE MÉTODO */}
+            {!metodoPago ? (
+              <div className="grid grid-cols-2 gap-4">
+                <button 
+                  onClick={() => setMetodoPago('efectivo')}
+                  className="bg-black border border-white/10 hover:border-yellow-400 p-6 rounded-2xl flex flex-col items-center gap-2 transition-all group"
+                >
+                  <span className="text-3xl">💵</span>
+                  <span className="font-black text-xs uppercase tracking-wider group-hover:text-yellow-400">EFECTIVO</span>
+                </button>
+                <button 
+                  onClick={() => setMetodoPago('qr')}
+                  className="bg-black border border-white/10 hover:border-yellow-400 p-6 rounded-2xl flex flex-col items-center gap-2 transition-all group"
+                >
+                  <span className="text-3xl">📱</span>
+                  <span className="font-black text-xs uppercase tracking-wider group-hover:text-yellow-400">PAGO QR</span>
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {/* BOTÓN PARA VOLVER ATRÁS */}
+                <button 
+                  onClick={() => setMetodoPago(null)}
+                  className="text-[10px] font-bold text-slate-500 hover:text-yellow-400 uppercase tracking-widest"
+                >
+                  ← Cambiar método
+                </button>
+
+                {/* FLUJO DE CAJA PARA EFECTIVO */}
+                {metodoPago === 'efectivo' && (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-2">¿Con cuánto paga el cliente?</label>
+                      <input 
+                        type="number"
+                        autoFocus
+                        placeholder="Monto en Bs"
+                        value={pagaCon}
+                        onChange={(e) => setPagaCon(e.target.value)}
+                        className="w-full bg-black border border-white/10 focus:border-yellow-400 outline-none p-4 rounded-xl font-black text-xl text-yellow-400 placeholder:text-slate-800"
+                      />
+                    </div>
+
+                    {parseFloat(pagaCon) >= totalVenta && (
+                      <div className="bg-black/50 p-4 rounded-xl border border-green-500/20 flex justify-between items-center">
+                        <span className="text-xs font-bold text-slate-400 uppercase">Cambio a devolver:</span>
+                        <span className="text-2xl font-black text-green-400">Bs {(parseFloat(pagaCon) - totalVenta).toFixed(2)}</span>
+                      </div>
+                    )}
+
+                    <button
+                      disabled={!pagaCon || parseFloat(pagaCon) < totalVenta}
+                      onClick={() => ejecutarGuardadoVenta('efectivo')}
+                      className="w-full bg-green-500 text-black font-black py-4 rounded-xl uppercase text-sm tracking-wider hover:bg-green-600 disabled:bg-slate-800 disabled:text-slate-600 disabled:cursor-not-allowed transition-all"
+                    >
+                      Registrar y Entregar Cambio
+                    </button>
+                  </div>
+                )}
+
+                {/* FLUJO SEGURO PARA PAGO POR QR */}
+                {metodoPago === 'qr' && (
+                  <div className="space-y-4 text-center">
+                    <p className="text-xs text-slate-400">Verifica en tu teléfono que los <strong className="text-yellow-400">Bs {totalVenta.toFixed(2)}</strong> hayan ingresado a la cuenta antes de confirmar.</p>
+                    
+                    <div className="relative w-full bg-black h-14 rounded-xl overflow-hidden border border-white/10 select-none">
+                      {/* Capa animada del progreso de la barra */}
+                      <div 
+                        className="absolute left-0 top-0 h-full bg-yellow-400 transition-all duration-100"
+                        style={{ width: `${progresoQR}%` }}
+                      ></div>
+                      
+                      {/* Botón táctil / mouse interactivo */}
+                      <button
+                        onMouseDown={() => setPresionandoQR(true)}
+                        onMouseUp={() => setPresionandoQR(false)}
+                        onMouseLeave={() => setPresionandoQR(false)}
+                        onTouchStart={() => setPresionandoQR(true)}
+                        onTouchEnd={() => setPresionandoQR(false)}
+                        className="absolute inset-0 w-full h-full flex items-center justify-center font-black text-xs uppercase tracking-widest mix-blend-difference text-white cursor-pointer"
+                      >
+                        {presionandoQR ? "¡Mantén presionado!..." : "Mantén presionado 5s para confirmar"}
+                      </button>
+                    </div>
+
+                    <div className="text-[10px] text-slate-600 font-bold">
+                      Progreso de verificación: {Math.round(progresoQR)}%
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
     </div>
   );

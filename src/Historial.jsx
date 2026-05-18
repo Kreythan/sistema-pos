@@ -71,12 +71,23 @@ const Historial = () => {
               <div className="p-6 bg-black/60 border-t border-white/5 space-y-3">
                 {ventas[fecha].map((v) => (
                   <div key={v.id} className="bg-slate-900/50 p-4 rounded-2xl border border-white/5">
-                    <div className="flex justify-between items-start mb-2">
-                      <span className="text-[10px] font-bold text-slate-500">
-                        🕒 {v.fecha?.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
+                    <div className="flex justify-between items-center mb-2">
+                      
+                      {/* SECCIÓN MODIFICADA: HORA Y VENDEDOR */}
+                      <div className="flex items-center gap-3">
+                        <span className="text-[10px] font-bold text-slate-500">
+                          🕒 {v.fecha?.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                        
+                        {/* Etiqueta del vendedor */}
+                        <span className="bg-yellow-400/10 text-yellow-400 px-2 py-0.5 rounded-md font-bold border border-yellow-400/20 text-[9px] uppercase tracking-wider">
+                          👤 {v.vendedor ? v.vendedor.split('@')[0] : 'Desconocido'}
+                        </span>
+                      </div>
+
                       <span className="text-sm font-black text-yellow-400">Total: Bs {v.total.toFixed(2)}</span>
                     </div>
+                    
                     <div className="grid grid-cols-1 gap-1">
                       {v.productos.map((prod, index) => (
                         <div key={index} className="flex justify-between text-xs">
